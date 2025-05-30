@@ -17,7 +17,7 @@ function login(){
   console.log(1)
   axios.post("javaapi/api/login",{"name":name.value,"password":password.value}).then((response)=>{
     console.log(response.data)
-    console.log(1)
+
     if(response.data=="success"){
       alert("Login successful")
     }else{

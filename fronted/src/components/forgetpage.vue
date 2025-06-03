@@ -3,39 +3,28 @@
 
   <div class="maincs">
 
-  <p class="title" v-if="op==0">用户登录</p>
-<p class="title" v-if="op==2">项目经理登录</p>
-    <p class="title" v-if="op==1">标注员登录</p>
+  <p class="title">忘记密码</p>
+
 <!--    <div class="username">-->
 <!--    <p>账号：</p>-->
-  <input type="text" name="username" placeholder="邮箱（需带@.com）" v-model="name">
+  <input type="text" name="username" placeholder="邮箱（需带@.com）" v-model="email" style="width: 300px;display: inline-block;margin-left: 45px;margin-top: 10px">
+    <button style="font-size:12px;width:80px;float:left;display: inline-block;margin-top:-50px;margin-left: 370px" @click="getcode">发送验证码</button>
 <!--</div>-->
-
-
-      <input type="password" name="password" placeholder="密码" v-model="password" ><br>
+<input type="text" name="username" placeholder="验证码" v-model="codee">
+<input type="password" name="password" placeholder="密码" v-model="password" >
+      <input type="password" name="password" placeholder="再输一遍密码" v-model="password1" ><br>
  <div class="p1">
-   <p @click="jumpforget">忘记密码</p>
+   <p @click="jumplogin">登录</p>
  </div>
     <div class="p2">
       <p @click="jumpregister">注册</p>
     </div>
     <br>
 <div class="but">
-    <button type="submit"  @click="login">登录</button>
+    <button type="submit"  @click="login" style="margin-top: -15px">重置密码</button>
   </div>
-<div class="p3" v-if="op==0||op==1">
-   <p @click="login2">项目经理登录</p>
- </div>
-    <div class="p3" v-if="op==2">
-   <p @click="login0">用户登录</p>
- </div>
-    <div class="p4" v-if="op==1">
-      <p @click="login0" >用户登录</p>
-    </div>
-    <div class="p4" v-if="op==0||op==2">
-      <p @click="login1" >标注员登录</p>
-    </div>
-<!--<p>{{op}}</p>-->
+
+
     </div>
 
   </body>
@@ -45,36 +34,48 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
-const name = ref('')
+const email = ref('')
+const codee = ref('')
+const password1 = ref('')
 const password = ref('')
-const op = ref(0)
+function getcode(){
+  axios.post("javaapi/user/find",{"op":0,"email":email.value}).then((response)=>{
+    // console.log(response.data["code"])
+
+    if(response.data["code"]===0){
+      alert("成功发送验证码！")
+    }else{
+       alert("发送验证码失败！")
+    }
+  })
+
+
+}
+
 function jumpregister(){
   window.location.href = "/register"
 }
-function jumpforget(){
-  window.location.href = "/forget"
-}
-function login2(){
-  op.value=2
-}
-function login1(){
-  op.value=1
-}
-function login0(){
-  op.value=0
+function jumplogin(){
+  window.location.href = "/login"
 }
 function login(){
-  console.log(1)
-  axios.post("javaapi/user/login",{"op":op.value,"email":name.value,"password":password.value}).then((response)=>{
-    console.log(response.data["code"])
+  // console.log(1)
+  if(password.value===password1.value) {
+    axios.post("javaapi/user/find", {"op": 1, "email": email.value,"code":codee.value,"password":password.value}).
+    then((response) => {
+      // console.log(response.data["code"])
 
-    if(response.data["code"]===0){
-      alert("Login successful")
-      // window.location.href = "/main"
-    }else{
-       alert("Login failed")
-    }
-  })
+      if (response.data["code"] === 0) {
+        alert("密码重置成功！")
+        window.location.href = "/login"
+
+      } else {
+        alert("密码重置失败！")
+      }
+    })
+  }else{
+    alert("两次密码不一致！")
+  }
 }
 </script>
 
@@ -114,7 +115,7 @@ function login(){
   width: 400px;
   height: 60px;
   margin: 0 auto;
-  margin-top: 80px;
+  margin-top: 10px;
   border-radius: 10px;
   border: 0px solid #4a4a4a;
   padding-left: 10px;
@@ -122,7 +123,7 @@ function login(){
 .p1{
   color:blue;
   cursor: pointer;
-  //margin-top: 0px;
+  margin-top: -20px;
   height: 40px;
   width: 100px;
   float: left;
@@ -131,6 +132,7 @@ margin-left: 60px;
   //border: 3px solid #4a4a4a;
 }
 .p2{
+  margin-top: -20px;
   color:blue;
   cursor: pointer;
   margin-left: 230px;
@@ -167,30 +169,17 @@ height: 50px;
   font-size: 22px;
   background-color: #f3f0d1;
 }
-.p3{
 
-  color: #212180;
-  cursor: pointer;
-  //margin-top: 0px;
-  padding-top: 5px;
-  height: 40px;
-  //width: 100px;
-  float: left;
-margin-left: 30px;
-  font-size: 15px;
-  margin-bottom: 10px;
-  //border: 3px solid #4a4a4a;
-}
 .p4{
+  margin-top: -50px;
   padding-top: 5px;
   color: #212180;
   cursor: pointer;
-  margin-left: 280px;
+  margin-left: 380px;
   height: 40px;
   //width: 100px;
 float: left;
   font-size: 15px;
-
 
 }
 

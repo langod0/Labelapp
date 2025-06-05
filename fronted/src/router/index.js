@@ -20,7 +20,28 @@ const routes = [
   {
   path: '/custmain',
   component: () => import('../components/custmain.vue')
-  }
+  },
+  {
+    path:'/manager',
+    component: () => import('../components/manager.vue')
+  },
+   {
+    path:'/my',
+    component: () => import('../components/my.vue')
+  },
+    {
+    path:'/mydata',
+    component: () => import('../components/mydata.vue')
+  },
+    {
+    path:'/workerpage',
+    component: () => import('../components/workerpage.vue')
+  },
+    {
+    path:'/lab',
+    component: () => import('../components/lab.vue')
+  },
+
 ];
 
 const router = createRouter({

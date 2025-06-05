@@ -5,6 +5,7 @@
 <div class="all">
 
 
+
   <div class="menu">
     <div class="logo">
     <img src="../other/1.png" width="100%" height="100%">
@@ -14,8 +15,7 @@
     <div class="menu1">
 
   <el-row class="tac">
-    <el-col >
-
+    <el-col>
       <el-menu
         default-active="2"
         class="el-menu-vertical-demo"
@@ -70,10 +70,14 @@
       <img src="../other/1.png" width="100%" height="100%" style="border-radius: 2.5vh" >
     </div>
 
-    <div class="usertype">用户</div>
+    <div class="usertype" @click="tomy">用户</div>
   </div>
-
-  <div class="main1" v-if="!flag">
+<div v-if="flag==-1" class="main1">
+  <div>
+    <img src="../other/main.jpg" style="width:400px;height:400px;margin-left: 5vh;margin-top: 5vh" >
+    </div>
+  </div>
+  <div class="main1" v-if="flag==0">
 <div class="push">
   <div class="text">
     <p>数据上传</p>
@@ -85,52 +89,109 @@
     <input type="file" name="username" style="width: 15vh;height: 2.5vh;margin-left: 1vh;margin-top: 1vh" @change="getfile" >
     <br><button class="pushup" @click="pushdata">上传</button>
   </div>
+<!--  <iframe :src="imgfile" width="100%" height="500px"></iframe>-->
 
 </div>
 
 
   </div>
-  <div class="main2" v-if="flag">
+  <div class="main2" v-if="flag==1">
 <!--    {{da.id}}-->
-<el-tabs  >
-    <el-tab-pane label="已上传的数据" >
+<el-tabs>
+    <el-tab-pane label="已上传的数据">
       <div>
-        <el-table :data="da" stripe height="100%" style="width:151.5vh">
-          <el-table-column prop="id" label="项目编号" width="300vh" />
-          <el-table-column prop="name" label="名称" width="300vh" />
-          <el-table-column prop="done" label="状态" width="320vh" />
-          <el-table-column width="300vh" label="删除">
+        <el-table :data="tableData" stripe height="100%" style="width:151.5vh">
+          <el-table-column prop="id" label="项目编号" width="250vh" />
+          <el-table-column prop="name" label="名称" width="250vh" />
+          <el-table-column prop="done" label="状态" width="250vh" />
+          <el-table-column width="250vh" label="删除">
             <template #default="scope">
               <el-button @click="delet(scope.row)">删除</el-button>
             </template>
           </el-table-column>
-          <el-table-column width="320vh" label="查看">
+          <el-table-column width="250vh" label="预览">
             <template #default="scope">
-              <el-button @click="updata(scope.row)">查看</el-button>
+              <el-button @click="lookpdf(scope.row)">预览PDF</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column width="230vh" label="查看">
+            <template #default="scope">
+              <el-button @click="updata(scope.row)" v-if="scope.row.done=='已审核' ">查看</el-button>
             </template>
           </el-table-column>
         </el-table>
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage"
+          :page-sizes="[13]"
+          :page-size="13"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total">
+        </el-pagination>
       </div>
     </el-tab-pane>
   </el-tabs>
 
   </div>
+<div class="look" v-if="flag==2">
+  <el-tabs  >
+    <el-tab-pane :label="tit" >
+      <div>
+        <el-table :data="tableData1" stripe height="100%" style="width:151.5vh">
+          <el-table-column prop="time" label="时间" width="210vh" />
+          <el-table-column prop="school" label="学校" width="210vh" />
+          <el-table-column prop="profession" label="专业" width="210vh" />
+          <el-table-column prop="course" label="课程" width="200vh" />
+          <el-table-column prop="semester" label="学期" width="200vh" />
+          <el-table-column prop="stuname" label="学生姓名" width="200vh" />
+          <el-table-column prop="grade" label="成绩" width="200vh" />
+        </el-table>
+        <el-pagination
+          @size-change="handleSizeChange1"
+          @current-change="handleCurrentChange1"
+          :current-page="currentPage1"
+          :page-sizes="[13]"
+          :page-size="13"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total1">
+        </el-pagination>
+      </div>
+    </el-tab-pane>
 
-
-
+  </el-tabs>
+  <div>
+    <el-button  type="primary" @click="exports" style="margin-left: 2vh;width: 8vh;height: 4vh;margin-top: 5vh">数据导出</el-button>
   </div>
+</div>
+
+  <el-dialog  v-model="dialogVisible" width="60%">
+    <iframe :src="nowfile" width="100%" height="500px"></iframe>
+  </el-dialog>
+
+
+
+</div>
+
+
+
 </template>
 
 <script lang="ts" setup>
+
+
+
 import { ref } from 'vue';
 import axios from 'axios';
-
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Document,
   Menu as IconMenu,
   Location,
   Setting,
 } from '@element-plus/icons-vue'
+import jwt from 'jsonwebtoken';
+import * as XLSX from "xlsx";
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
 }
@@ -138,27 +199,28 @@ const handleClose = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
 }
 
-
+const nowfile=ref(null)
 const route1=ref("")
 const route2=ref("")
-const flag=ref(0)
+const flag=ref(-1)
 const pdffile=ref(null)
 const imgfile=ref(null)
 const dataname=ref("")
-const da=ref([
-  { id: 1, lon: 1.1, lat: 1.1, name: "站点1", line: 1, done: "待审核" },
-      { id: 2, lon: 1.1, lat: 1.1, name: "站点2", line: 1, done: "待审核" },
-      { id: 3, lon: 1.1, lat: 1.1, name: "站点3", line: 1, done: "待审核" },
-      { id: 4, lon: 1.1, lat: 1.1, name: "站点4", line: 1, done: "待审核" },
-      { id: 5, lon: 1.1, lat: 1.1, name: "站点5", line: 1, done: "待审核" },
-]
-
-)
+const dialogVisible = ref(false)
+const tit=ref("")
+const da=ref([])
+const da1=ref([])
 
 function pushdata(){
-  console.log(pdffile.value)
-  console.log(imgfile.value)
-  axios.post("javaapi/customer/upload", {"name":dataname.value,"file":imgfile.value}).then((response) => {
+  // console.log(pdffile.value)
+  // console.log(imgfile.value)
+
+  let formData = new FormData();
+      formData.append("name", dataname.value);
+      formData.append("file", pdffile.value);
+      // console.log(formData)
+
+  axios.post("javaapi/customer/upload", formData,{headers:{'Authorization': localStorage.getItem("Authorization")}}).then((response) => {
 console.log(response.data["code"])
     if(response.data["code"]===0){
       alert("上传成功！")
@@ -170,11 +232,14 @@ console.log(response.data["code"])
 function getfile(event:any){
   pdffile.value=event.target.files[0]
   console.log(pdffile.value)
+  // imgfile.value=pdffile.value
   const reader=new FileReader();
   reader.onload=(event)=>{
     imgfile.value=event.target.result;
+    console.log(imgfile.value)
   };
   reader.readAsDataURL(pdffile.value);
+
 }
 
 
@@ -188,14 +253,191 @@ function datalook(){
   route1.value="结果查看"
   route2.value=""
   flag.value=1
+
+  axios.get("javaapi/customer/getdata", {headers:{'Authorization': localStorage.getItem("Authorization")}}).then((response) => {
+    console.log(response.data["code"])
+
+
+
+
+      console.log(da.value)
+    if(response.data["code"]===0){
+      da.value=response.data["data"]
+      da.value.forEach((item, index) => {
+        item.id = index + 1;
+        if(item.done=='0') item.done='未审核'
+        else item.done='已审核'
+      });
+          refresh()
+    }else{
+      alert("查看失败！")
+    }
+
+  })
+
 }
 
 function updata(row:any){
+  route1.value="结果查看"
+  route2.value=row.name
+  flag.value=2
+  tit.value=row.name
 
+  axios.post("javaapi/customer/checkresult", {"name":row.name},{headers:{'Authorization': localStorage.getItem("Authorization")}}).then((response) => {
+    console.log(response.data["code"])
+    if(response.data["code"]===0){
+      da1.value=response.data["data"]
+      refresh()
+    }else{
+      alert("查看失败！")
+    }
+
+  })
 }
 function delet(row:any){
 
+
+
+  ElMessageBox.confirm(
+    '是否确定删除？',
+    'Warning',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    }
+  )
+    .then(() => {
+      ElMessage({
+        type: 'success',
+        message: 'Delete completed',
+      })
+
+        // const token = localStorage.getItem("Authorization");
+        // console.log("Token:", token);
+      axios.post("javaapi/customer/delete", {"name":row.name},{headers:{'Authorization': localStorage.getItem("Authorization")}}).then((response) => {
+        console.log(response.data["code"])
+        if(response.data["code"]===0){
+          alert("删除成功！")
+          axios.get("javaapi/customer/getdata", {headers:{'Authorization': localStorage.getItem("Authorization")}}).then((response) => {
+           console.log(response.data["code"])
+           if(response.data["code"]===0){
+             da.value=response.data["data"]
+             // da.value=response.data["data"]
+              da.value.forEach((item, index) => {
+               item.id = index + 1;
+               if(item.done=='0') item.done='未审核'
+                else item.done='已审核'
+              });
+             refresh()
+            }else{
+               alert("查看失败！")
+           }
+           })
+        }else{
+          alert("删除失败！")
+        }
+
+
+      })
+
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: 'Delete canceled',
+      })
+    })
+
 }
+
+const currentPage = ref(1);
+    const pageSize = ref(13);
+    const total = ref(da.value.length);
+const  pageSize1 = ref(13);
+    const tableData = ref([]);
+const tableData1 = ref([]);
+const currentPage1 = ref(1);
+const total1 = ref(da1.value.length);
+
+
+    const handleSizeChange = (newSize) => {
+      pageSize.value = newSize;
+      updateTableData();
+    };
+
+    const handleCurrentChange = (newPage) => {
+      currentPage.value = newPage;
+      updateTableData();
+    };
+
+    const updateTableData = () => {
+      const start = (currentPage.value - 1) * pageSize.value;
+      const end = start + pageSize.value;
+      tableData.value = da.value.slice(start, end);
+    };
+    updateTableData();
+
+    const handleSizeChange1 = (newSize) => {
+      pageSize1.value = newSize;
+      updateTableData1();
+    };
+
+    const handleCurrentChange1 = (newPage) => {
+      currentPage1.value = newPage;
+      updateTableData1();
+    };
+    const updateTableData1 = () => {
+      const start = (currentPage1.value - 1) * pageSize1.value;
+      const end = start + pageSize1.value;
+      tableData1.value = da1.value.slice(start, end);
+    };
+
+
+ updateTableData1();
+
+function refresh(){
+  total1.value = da1.value.length
+  total.value = da.value.length
+
+  updateTableData();
+  updateTableData1();
+}
+
+
+ function lookpdf(row:any) {
+  dialogVisible.value= true;
+  console.log(11111)
+  // console.log(row.file)
+  nowfile.value='data:application/pdf;base64,'+row.file;
+  console.log(nowfile.value)
+
+ }
+ function exports(){
+const data = da1.value.map(item => ({
+        时间: item.time,
+        学校: item.school,
+        专业: item.profession,
+        课程: item.course,
+        学期: item.semester,
+        学生姓名: item.stuname,
+        成绩: item.grade
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+      XLSX.writeFile(workbook, 'data.xlsx');
+      alert("导出成功！")
+
+  }
+  function tomy(){
+    const url = new URL(window.location.origin + '/my');
+      url.searchParams.append('op', "用户");
+      window.location.href = url.toString();
+  }
+
 </script>
 
 
@@ -280,6 +522,7 @@ background-color: #f9f5f5;
   border-radius: 2.5vh;
 }
 .usertype{
+  cursor: pointer;
   font-size: 2vh;
   float: left;
   width: 5vh;

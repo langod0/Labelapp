@@ -64,13 +64,20 @@ function login0(){
   op.value=0
 }
 function login(){
-  console.log(1)
-  axios.post("javaapi/user/login",{"op":op.value,"email":name.value,"password":password.value}).then((response)=>{
-    console.log(response.data["code"])
-
+  // console.log(1)
+  axios.post("javaapi/user/login",{"identity":op.value,"email":name.value,"password":password.value}).then((response)=>{
+    // console.log(response.data)
+    console.log(op.value)
     if(response.data["code"]===0){
+      localStorage.setItem("Authorization", response.data.data);
       alert("Login successful")
-      // window.location.href = "/main"
+      if(op.value==0)
+        window.location.href = "/custmain"
+      else if(op.value==2){
+        window.location.href = "/manager"
+      }else{
+        window.location.href = "/workerpage"
+      }
     }else{
        alert("Login failed")
     }

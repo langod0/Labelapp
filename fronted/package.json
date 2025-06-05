@@ -11,16 +11,23 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@element-plus/icons-vue": "^2.3.1",
+    "@handsontable/vue3": "^15.3.0",
+    "@vueuse/core": "^11.0.3",
     "axios": "^1.7.7",
     "echarts": "^5.5.1",
     "element-plus": "^2.8.3",
+    "file-saver": "^2.0.5",
+    "handsontable": "^15.3.0",
+    "jsonwebtoken": "^9.0.2",
     "vue": "^3.4.29",
+    "vue-excel-editor": "^1.5.23",
     "vue-router": "^4.4.4",
     "vue-seamless-scroll": "^1.1.23",
-    "@vueuse/core": "^11.0.3",
-    "@element-plus/icons-vue": "^2.3.1"
+    "vue3-excel-editor": "^1.0.60",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.9",
     "@vitejs/plugin-vue": "^5.0.5",
     "vite": "^5.3.1"
   }

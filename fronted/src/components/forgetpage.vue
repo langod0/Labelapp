@@ -39,8 +39,8 @@ const codee = ref('')
 const password1 = ref('')
 const password = ref('')
 function getcode(){
-  axios.post("javaapi/user/find",{"op":0,"email":email.value}).then((response)=>{
-    // console.log(response.data["code"])
+  axios.post("javaapi/user/find",{"op":"0","email":email.value},{headers:{'Authorization': localStorage.getItem("Authorization")}}).then((response)=>{
+    console.log(response.data)
 
     if(response.data["code"]===0){
       alert("成功发送验证码！")
@@ -61,9 +61,9 @@ function jumplogin(){
 function login(){
   // console.log(1)
   if(password.value===password1.value) {
-    axios.post("javaapi/user/find", {"op": 1, "email": email.value,"code":codee.value,"password":password.value}).
+    axios.post("javaapi/user/find", {"op": 1, "email": email.value,"code":codee.value,"password":password.value},{headers:{'Authorization': localStorage.getItem("Authorization")}}).
     then((response) => {
-      // console.log(response.data["code"])
+      console.log(response.data)
 
       if (response.data["code"] === 0) {
         alert("密码重置成功！")
